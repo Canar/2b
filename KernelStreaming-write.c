@@ -47,9 +47,10 @@ HANDLE OpenAudioDevice() {
         return INVALID_HANDLE_VALUE;
     }
 
-    hDevice = CreateFile(deviceInterfaceDetailData->DevicePath, GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+    printf("%s",deviceInterfaceDetailData->DevicePath);
+    hDevice = CreateFile(deviceInterfaceDetailData->DevicePath, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
     if (hDevice == INVALID_HANDLE_VALUE) {
-        fprintf(stderr, "CreateFile failed\n");
+	    fprintf(stderr, "CreateFile failed with error: %ld\n", GetLastError());
     }
 
     free(deviceInterfaceDetailData);

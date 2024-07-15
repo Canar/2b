@@ -1,90 +1,70 @@
 CC=gcc
 PROG=2n
 MINGW_CPP=x86_64-w64-mingw32-gcc
-WAVEOUT_CC=waveout.0.c
 PREFIX=/usr/local/bin
 SHELL=/bin/bash
 FF=$(shell which ffmpeg || echo /usr/bin/does_not_exist )
 
-$(PROG):	$(PROG).c Makefile config.h config.linux.h $(FF)
-	$(CC) $(CFLAGS) -o $(PROG) $(PROG).c
+#Windows/Wine
+API=DirectSound KernelStreaming XAudio2 MME WASAPI
+
+#API=OPENSL-ES
+
+PLATFORM=linux
+
+all: $(PLATFORM)
+
+linux: wine
+
+wine: $(API) Windows-binary-cat.exe
+
+config.h:	config.mingw.h
+	echo Defaulting to MinGW config. Symlink a different config for other platforms.
+	#[ echo $$MSYS | egrep -i winsymlinks:[ln] ] || { echo Set winsymlinks in MSYS= ; exit 1 ; }
+	ln -s config.mingw.h config.h
 
 $(FF):	
 	@echo Warning: FFMPEG executable not found. 2n will build but not function.
 
-config.h:	config.linux.h
-	echo Defaulting to Linux config. Symlink a different config for other platforms.
-	ln -s config.linux.h config.h
-
-tcc:
-	tcc -o $(PROG) 2n.c
-
-debug:
-	$(CC) -g -o $(PROG) 2n.c
-
-warn:
-	$(CC) -Wall -o $(PROG) 2n.c
-
-waveout.exe:	waveout/$(WAVEOUT_CC)
-	$(MINGW_CPP) -o waveout.exe waveout/$(WAVEOUT_CC) -lwinmm
-
-waveout:	waveout.exe
-
-waveOut-ls.exe:	waveOut-ls.c
-	$(MINGW_CPP) -o waveOut-ls.exe waveOut-ls.c -lwinmm
-
-waveOut-write.exe:	waveOut-write.c
-	$(MINGW_CPP) -o waveOut-write.exe waveOut-write.c -Wall -lwinmm
-
-install:	2n
-	cp $(PROG) $(PREFIX)/$(PROG)
-
-ds: DSound-write.exe
-
-DSound-write.exe: DSound-write.c
-	$(MINGW_CPP) -o DSound-write.exe DSound-write.c -ldsound
-
-ds-test: tmp.raw DSound-write.exe
-	cat tmp.raw | wine DSound-write.exe
-
-tmp.raw:
+tmp.raw: $(FF)
 	ffmpeg -loglevel -8 -i /media/gondolin/audio/seedbox/2303/*Tunes\ 2*/$(shell printf '%02d' $$(( $$RANDOM % 17 + 1 )))*.flac -ac 2 -ar 44100 -f f32le tmp.raw
 	#ffmpeg -loglevel -8 -i /media/gondolin/audio/seedbox/2303/*Tunes\ 2*/$(shell printf '%02d' $$(( $$RANDOM % 17 + 1 )))*.flac -ac 2 -ar 44100 -f s16le -ss 5 -t 30 tmp.raw
 
-ds-backup: DSound-write.c.bak
+DirectSound: DirectSound-write.exe # DirectSound-ls.exe # bugged
 
-DSound-write.c.bak:
-	cp DSound-write.c DSound-write.c.bak
+KernelStreaming: KernelStreaming-write.exe
 
-clean-ds:
-	rm DSound-write.exe tmp.raw
+XAudio2: XAudio2-write.exe
 
-w: w.exe
+MME: MME-write.exe MME-ls.exe
 
-w.exe: wasapi.c
-	x86_64-w64-mingw32-gcc  wasapi.c -lole32 -luuid -lksuser -lavrt -o w.exe
+WASAPI: WASAPI-write.exe
 
-w-test: w.exe tmp.raw
-	cat tmp.raw | wine w.exe
+MME-write.exe:	MME-write.c config.h
+	$(MINGW_CPP) -o MME-write.exe MME-write.c -lwinmm
 
-x: x.exe
+MME-ls.exe:	MME-ls.c config.h
+	$(MINGW_CPP) -o MME-ls.exe MME-ls.c -lwinmm
 
-x.exe:
-	$(MINGW_CPP) -o x x.c -lole32 -lxaudio2_8
+DirectSound-write.exe: DirectSound-write.c
+	$(MINGW_CPP) -o DirectSound-write.exe DirectSound-write.c -ldsound
 
-x-test: x.exe tmp.raw
-	cat tmp.raw | wine x.exe
+DirectSound-ls.exe: DirectSound-ls.c
+	$(MINGW_CPP) -o DirectSound-ls.exe DirectSound-ls.c -ldsound
 
-k: k.exe
+WASAPI-write.exe: WASAPI-write.c
+	$(MINGW_CPP) -o WASAPI-write.exe WASAPI-write.c -lole32 -luuid -lksuser -lavrt
 
-k.exe: k.c
-	$(MINGW_CPP) -o k k.c -lsetupapi -lksuser
+XAudio2-write.exe: XAudio2-write.c
+	$(MINGW_CPP) -o XAudio2-write.exe XAudio2-write.c -lole32 -lxaudio2_8
 
-k-test: k.exe tmp.raw
-	cat tmp.raw | wine k.exe
+KernelStreaming-write.exe: KernelStreaming-write.c
+	$(MINGW_CPP) -o KernelStreaming-write.exe KernelStreaming-write.c -lsetupapi -lksuser
 
-opensl:
-	clang -o opensl opensl.c -lOpenSLES
+Windows-binary-cat.exe: Windows-binary-cat.c
+	$(MINGW_CPP) -o Windows-binary-cat.exe Windows-binary-cat.c
 
+OpenSL-ES-write.exe: OpenSL-ES-write.c
+	clang -o OpenSL-ES-write.exe OpenSL-ES-write.c -lOpenSLES
 
 .PHONY: install debug tcc waveout DSound-write.c.bak

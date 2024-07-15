@@ -28,10 +28,11 @@ The following Windows audio APIs have an implementation.
 Windows programs are built with MinGW.\
 XAudio has a playback issue.\
 There is a non-functional attempt at Kernel Streaming.\
-Windows code was tested in Wine and QEMU-KVM Windows 11.
+Windows code was tested in Wine and MSYS2-MINGW64 on\
+QEMU KVM Windows 11.
 
 Additionally, there is an OpenSL ES implementation, which\
-is developed and tested on Termux for Android.
+is developed and tested in Termux on Android 11.
 
 Finally, there is also a minimal `cat` implementation.\
 It's only really of interest if you're curious how to\
