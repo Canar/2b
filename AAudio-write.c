@@ -1,3 +1,4 @@
+//#include "tcc.h" //uncomment to build with tcc
 #include <stdio.h>
 #include <stdlib.h>
 #include <aaudio/AAudio.h>
