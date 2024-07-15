@@ -20,14 +20,15 @@ example as a tutorial for implementation of the various APIs.
 
 The following Windows audio APIs have an implementation.
 
-Windows programs are built with MinGW.
-
 - MME / waveOut
 - DirectSound
 - WASAPI
 - XAudio
 
-There is a non-functional attempt at Kernel Streaming as well.
+Windows programs are built with MinGW.
+XAudio has a playback issue.
+There is a non-functional attempt at Kernel Streaming.
+Windows code was tested in Wine and QEMU-KVM Windows 11.
 
 Additionally, there is an OpenSL ES implementation, which\
 is developed and tested on Termux for Android.
