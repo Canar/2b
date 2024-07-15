@@ -1,5 +1,5 @@
 CC=gcc
-PROG=2n
+PROJECT=2b
 MINGW_CPP=x86_64-w64-mingw32-gcc
 PREFIX=/usr/local/bin
 SHELL=/bin/bash
