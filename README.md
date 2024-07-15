@@ -31,7 +31,7 @@ There is a non-functional attempt at Kernel Streaming as well.
 Additionally, there is an OpenSL ES implementation, which\
 is developed and tested on Termux for Android.
 
-Finally, there is also a minimal `cat` implementation.\ 
+Finally, there is also a minimal `cat` implementation.\
 It's only really of interest if you're curious how to\
 set up Windows systems to pipe binary, ie. not treat\
 `0x1a` as EOF.
