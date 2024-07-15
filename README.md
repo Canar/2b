@@ -25,9 +25,9 @@ The following Windows audio APIs have an implementation.
 - WASAPI
 - XAudio
 
-Windows programs are built with MinGW.
-XAudio has a playback issue.
-There is a non-functional attempt at Kernel Streaming.
+Windows programs are built with MinGW.\
+XAudio has a playback issue.\
+There is a non-functional attempt at Kernel Streaming.\
 Windows code was tested in Wine and QEMU-KVM Windows 11.
 
 Additionally, there is an OpenSL ES implementation, which\
