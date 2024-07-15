@@ -27,8 +27,7 @@ $(FF):
 	@echo Warning: FFMPEG executable not found. 2n will build but not function.
 
 tmp.raw: $(FF)
-	ffmpeg -loglevel -8 -i /media/gondolin/audio/seedbox/2303/*Tunes\ 2*/$(shell printf '%02d' $$(( $$RANDOM % 17 + 1 )))*.flac -ac 2 -ar 44100 -f f32le tmp.raw
-	#ffmpeg -loglevel -8 -i /media/gondolin/audio/seedbox/2303/*Tunes\ 2*/$(shell printf '%02d' $$(( $$RANDOM % 17 + 1 )))*.flac -ac 2 -ar 44100 -f s16le -ss 5 -t 30 tmp.raw
+	ffmpeg -loglevel -8 -i /media/gondolin/audio/seedbox/2303/*Tunes\ 2*/$(shell printf '%02d' $$(( $$RANDOM % 17 + 1 )))*.flac -ac 2 -ar 44100 -f s16le tmp.raw
 
 DirectSound: DirectSound-write.exe # DirectSound-ls.exe # bugged
 

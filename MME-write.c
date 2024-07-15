@@ -1,43 +1,57 @@
+//to test: ffmpeg -i audio.file -f s16le - | waveOut-write.exe
+
+
+#define WIN32_LEAN_AND_MEAN
+
+#include "config.h"
+
 #include <windows.h>
 #include <mmsystem.h>
 #include <stdio.h>
+#include <io.h>
+#include <fcntl.h>
 
-void printwf(int fmt,DWORD flag,char* desc){
-	if(fmt||flag)
-		printf("\t\t%s\n",desc);
-}
+#define BLK_N 8
+#define BLK_LEN 16384
 
-int main(int argc,char** argv){
-	int devs=waveOutGetNumDevs();
-	printf("%d devices detected.\n",devs);
-	WAVEOUTCAPS pwoc;
-	for(int i=0;i<devs;i++){
-		waveOutGetDevCaps(i,&pwoc,sizeof(WAVEOUTCAPS));
-		printf("ID: %d  wMid: %d  wPid: %d  ver: %d  Name: '%s'  fmt: %d  ch: %d  res: %d  supp: %d\n",i,pwoc.wMid,pwoc.wPid,pwoc.vDriverVersion,pwoc.szPname,pwoc.dwFormats,pwoc.wChannels,pwoc.wReserved1,pwoc.dwSupport);
-		printf("\tFormats:\n");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_1M08,"11.025 kHz, mono, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_1M16,"11.025 kHz, mono, 16-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_1S08,"11.025 kHz, stereo, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_1S16,"11.025 kHz, stereo, 16-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_2M08,"22.05 kHz, mono, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_2M16,"22.05 kHz, mono, 16-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_2S08,"22.05 kHz, stereo, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_2S16,"22.05 kHz, stereo, 16-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_4M08,"44.1 kHz, mono, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_4M16,"44.1 kHz, mono, 16-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_4S08,"44.1 kHz, stereo, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_4S16,"44.1 kHz, stereo, 16-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_96M08,"96 kHz, mono, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_96M16,"96 kHz, mono, 16-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_96S08,"96 kHz, stereo, 8-bit");
-		printwf(pwoc.dwFormats,WAVE_FORMAT_96S16,"96 kHz, stereo, 16-bit");
-		printf("\tCapabilities:\n");
-		printwf(pwoc.dwSupport,WAVECAPS_LRVOLUME,"Supports separate left and right volume control.");
-		printwf(pwoc.dwSupport,WAVECAPS_PITCH,"Supports pitch control.");
-		printwf(pwoc.dwSupport,WAVECAPS_PLAYBACKRATE,"Supports playback rate control.");
-		printwf(pwoc.dwSupport,WAVECAPS_SYNC,"The driver is synchronous and will block while playing a buffer.");
-		printwf(pwoc.dwSupport,WAVECAPS_VOLUME,"Supports volume control.");
-		printwf(pwoc.dwSupport,WAVECAPS_SAMPLEACCURATE,"Returns sample-accurate position information.");
+int main(){
+	char buffer[BLK_N*BLK_LEN];
+	char *buf[BLK_N];
+	for (int i=0;i<BLK_N;i++)
+		buf[i]=buffer+(i*BLK_LEN);
+
+	WAVEFORMATEX wf;
+	wf.wFormatTag = WAVE_FORMAT_PCM;
+	wf.nBlockAlign = ( wf.wBitsPerSample = BPS ) >> 3 * ( wf.nChannels = CHAN_ );
+	wf.nAvgBytesPerSec = ( wf.nSamplesPerSec = RATE_ ) * wf.nBlockAlign;
+	wf.cbSize = 0;
+
+	WAVEHDR wh[BLK_N];
+	for (int i=0;i<BLK_N;i++){
+		wh[i].lpData = buf[i];
+		wh[i].dwBufferLength = BLK_LEN;
+		wh[i].dwFlags = WHDR_DONE;
+		wh[i].dwLoops = 0;
 	}
+
+	_setmode(_fileno(stdin), _O_BINARY); // required
+	HWAVEOUT hWaveOut;
+	waveOutOpen(&hWaveOut,WAVE_MAPPER,&wf,0,0,CALLBACK_NULL);
+	int ef;
+	do {
+		ef=0;
+		for (int i=0;i<BLK_N;i++)
+			if(wh[i].dwFlags & WHDR_DONE){
+				waveOutUnprepareHeader(hWaveOut,&wh[i],sizeof(wh));
+				wh[i].dwBufferLength = fread(buf[i],1,BLK_LEN,stdin);
+				ef=wh[i].dwBufferLength<1;
+				waveOutPrepareHeader(hWaveOut,&wh[i],sizeof(wh));
+				waveOutWrite(hWaveOut,&wh[i],sizeof(wh));
+				break;
+			}
+	} while (!ef);
+
+	for (int i=0;i<BLK_N;i++) waveOutUnprepareHeader(hWaveOut,&wh[i],sizeof(wh));
+	waveOutClose(hWaveOut);
 	return 0;
 }
