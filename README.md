@@ -31,8 +31,12 @@ There is a non-functional attempt at Kernel Streaming.\
 Windows code was tested in Wine and MSYS2-MINGW64 on\
 QEMU KVM Windows 11.
 
-Additionally, there is an OpenSL ES implementation, which\
-is developed and tested in Termux on Android 11.
+Under Termux, the following APIs can be built and run.
+
+- OpenSL ES
+- AAudio
+
+AAudio requires Android 9 aka O aka Oreo.
 
 Finally, there is also a minimal `cat` implementation.\
 It's only really of interest if you're curious how to\
@@ -47,7 +51,10 @@ To generate a file `tmp.raw` for testing using ffmpeg:
 
 `tmp.raw` can then be piped into your choice of device.
 
-Linux: `cat tmp.raw | ./OpenSLES-write`
+There is a Makefile rule for `tmp.raw` that is configured\
+to select a random track from an album on my dev box.
+
+Termux: `cat tmp.raw | ./OpenSLES-write`
 
 Windows `type tmp.raw | DirectSound-write.exe`
 
