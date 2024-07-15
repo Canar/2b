@@ -7,15 +7,14 @@
 
 ## Abstract
 
-================================================================================
 This is a suite of auxiliary programs for my audio player [2n](https://github.com/Canar/2n).
 
 These programs read raw PCM from stdin and write to various audio devices. 
 
 These are modeled after eg. `pacat`, `aplay`, `pw-cat`.
 
-These programs may be of interest to users looking for a compact example\
-as a tutorial for implementation of the various APIs.
+These programs may be of interest to users looking for a compact\
+example as a tutorial for implementation of the various APIs.
 
 ## Platforms
 
@@ -27,9 +26,12 @@ Windows programs are built with MinGW.
 - WASAPI
 - XAudio
 
-Additionally, there is an OpenSL ES implementation.
+There is a non-functional attempt at Kernel Streaming as well.
 
-Finally, there is also a minimal `cat` implementation. 
+Additionally, there is an OpenSL ES implementation, which\
+is developed and tested on Termux for Android.
+
+Finally, there is also a minimal `cat` implementation.\ 
 It's only really of interest if you're curious how to\
 set up Windows systems to pipe binary, ie. not treat\
 `0x1a` as EOF.
@@ -42,9 +44,9 @@ To generate a file `tmp.raw` for testing using ffmpeg:
 
 `tmp.raw` can then be piped into your choice of device.
 
-Linux: `cat tmp.raw | ./opensl`
+Linux: `cat tmp.raw | ./OpenSLES-write`
 
-Windows `type tmp.raw | DSound-write.exe`
+Windows `type tmp.raw | DirectSound-write.exe`
 
 ## Features and Configuration
 
@@ -52,7 +54,7 @@ These programs are developed in the "Suckless" style and are configured\
 by editing `config.h`. This is where channel count, sampling rate,\
 sample format, and such are configured.
 
-`2b` defaults to CD audio quality.
+`2b` defaults to CD audio quality: 44.1kHz 16-bit interleaved stereo PCM
 
 ## Release Log
 
