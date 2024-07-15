@@ -19,6 +19,7 @@ example as a tutorial for implementation of the various APIs.
 ## Platforms
 
 The following Windows audio APIs have an implementation.
+
 Windows programs are built with MinGW.
 
 - MME / waveOut
