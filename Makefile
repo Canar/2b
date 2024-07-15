@@ -16,7 +16,7 @@ PLATFORM=termux
 
 all: $(PLATFORM)
 
-termux: OpenSL-ES
+termux: OpenSL-ES AAudio
 
 linux: wine
 
@@ -46,6 +46,8 @@ WASAPI: WASAPI-write.exe
 
 OpenSL-ES: OpenSL-ES-write
 
+AAudio: AAudio-write
+
 MME-write.exe:	MME-write.c config.h
 	$(MINGW_CPP) -o MME-write.exe MME-write.c -lwinmm
 
@@ -72,5 +74,8 @@ Windows-binary-cat.exe: Windows-binary-cat.c
 
 OpenSL-ES-write: OpenSL-ES-write.c
 	clang -o OpenSL-ES-write OpenSL-ES-write.c -lOpenSLES
+
+AAudio-write: AAudio-write.c
+	clang -o AAudio-write AAudio-write.c -laaudio --target=aarch64-unknown-linux-android26
 
 .PHONY: install debug tcc waveout DSound-write.c.bak
