@@ -16,6 +16,8 @@ These are modeled after eg. `pacat`, `aplay`, `pw-cat`.
 These programs may be of interest to users looking for a compact\
 example as a tutorial for implementation of the various APIs.
 
+Nothing here is well-tested at all, but everything "worked" at one point.
+
 ## Platforms
 
 The following Windows audio APIs have an implementation.
@@ -37,6 +39,8 @@ Under Termux, the following APIs can be built and run.
 - AAudio
 
 AAudio requires Android 9 aka O aka Oreo.
+
+Android shims do not heed config.h yet.
 
 Finally, there is also a minimal `cat` implementation.\
 It's only really of interest if you're curious how to\
@@ -60,12 +64,17 @@ Windows `type tmp.raw | DirectSound-write.exe`
 
 ## Features and Configuration
 
+These programs are very lightly tested and have all kinds of inconsistencies.
+
 These programs are developed in the "Suckless" style and are configured\
 by editing `config.h`. This is where channel count, sampling rate,\
-sample format, and such are configured.
+sample format, and such are configured, ideally.
 
 `2b` defaults to CD audio quality: 44.1kHz 16-bit interleaved stereo PCM
+
+
 
 ## Release Log
 
 0.0 - Initial release. `2024-07-15`
+Added some experimental outputs, readers, etc. `2025-04-10`
