@@ -1,8 +1,8 @@
 CC=gcc
 PROJECT=2b
 MINGW_CPP=x86_64-w64-mingw32-gcc
-PREFIX=/usr/local/bin
-SHELL=/bin/bash
+PREFIX ?= /usr/local/bin
+SHELL ?= /bin/bash
 FF=$(shell which ffmpeg || echo /usr/bin/does_not_exist )
 
 #Windows/Wine
