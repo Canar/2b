@@ -76,5 +76,5 @@ sample format, and such are configured, ideally.
 
 ## Release Log
 
-0.0 - Initial release. `2024-07-15`
+0.0 - Initial release. `2024-07-15`\
 Added some experimental outputs, readers, etc. `2025-04-10`
