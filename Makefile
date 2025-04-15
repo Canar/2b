@@ -78,4 +78,12 @@ OpenSL-ES-write: OpenSL-ES-write.c
 AAudio-write: AAudio-write.c
 	clang -o AAudio-write AAudio-write.c -laaudio --target=aarch64-unknown-linux-android26
 
+AAudio-write-mono: AAudio-write.c
+	clang -o AAudio-write-mono -DCHANNELS=1 AAudio-write.c -laaudio --target=aarch64-unknown-linux-android26
+
+AAudio-write-stereo: AAudio-write.c
+	clang -o AAudio-write-stereo -DCHANNELS=2 AAudio-write.c -laaudio --target=aarch64-unknown-linux-android26
+
+AAudio-write-channels: AAudio-write-mono AAudio-write-stereo
+
 .PHONY: install debug tcc waveout DSound-write.c.bak

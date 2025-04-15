@@ -1,9 +1,17 @@
-//#include "tcc.h" //uncomment to build with tcc
 #include <stdio.h>
 #include <stdlib.h>
 #include <aaudio/AAudio.h>
 
-#define BUFFER_SIZE 2048
+#ifndef RATE
+#define RATE 44100
+#endif
+#ifndef CHANNELS
+#define CHANNELS 1
+#endif
+#define BUFFER_SIZE 1<<12
+#define WORD_SIZE 1<<2
+#define FRAME_SIZE CHANNELS * WORD_SIZE
+#define BUFFER_FRAMES BUFFER_SIZE / FRAME_SIZE
 
 AAudioStreamBuilder *builder;
 AAudioStream *stream;
@@ -15,14 +23,12 @@ void halt(char ret){
 }
 
 void check(aaudio_result_t result,const char* action,const char* file,const int line){
-	if (result != AAUDIO_OK){
-		if(action){
-			fprintf(stderr,"Error '%s' in file '%s' at line %d.",AAudio_convertResultToText(result),file,line);
-		}else{
-			fprintf(stderr,"Failed to %s in file '%s' at line %d. %s",action,file,line,AAudio_convertResultToText(result));
-		}
-		halt(1);
-	}
+	if (result == AAUDIO_OK) return;
+
+	char* err="Failed to %s in file '%s' at line %d:\n\t%s\n";
+	if(action) err="Error in file '%2$s' at line %3$d:\n\t%4$s.\n";
+	fprintf(stderr,err,action,file,line,AAudio_convertResultToText(result));
+	halt(1);return;//shut up warning
 }
 
 #define AACKM(x,m) check(x,m,__FILE__,__LINE__)
@@ -33,22 +39,24 @@ void errorCallback(AAudioStream *stream, void *userData, aaudio_result_t error) 
 }
 
 int fillBufferWithPCMData(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames) {
-    size_t size = numFrames * sizeof(int16_t) * 2; // 2 channels (stereo), 16-bit PCM
-    fread(audioData, 1, size, stdin);
-    return AAUDIO_CALLBACK_RESULT_CONTINUE;
+    size_t size = numFrames * FRAME_SIZE;
+    if (fread(audioData, 1, size, stdin))
+		return AAUDIO_CALLBACK_RESULT_CONTINUE;
+	halt(0);return(0);
 }
 
 int main() {
+//int _start() {
     aaudio_result_t result;
 
-	 AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
-
-    AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-    AAudioStreamBuilder_setChannelCount(builder, 2);
-    AAudioStreamBuilder_setSampleRate(builder, 44100);
+	AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
+    AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_FLOAT);
+    //AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
+    AAudioStreamBuilder_setChannelCount(builder, CHANNELS);
+    AAudioStreamBuilder_setSampleRate(builder, RATE);
     AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_OUTPUT);
     AAudioStreamBuilder_setErrorCallback(builder, errorCallback, NULL);
-    AAudioStreamBuilder_setFramesPerDataCallback(builder, BUFFER_SIZE / (sizeof(int16_t) * 2));
+    AAudioStreamBuilder_setFramesPerDataCallback(builder, BUFFER_FRAMES);
     AAudioStreamBuilder_setDataCallback(builder, fillBufferWithPCMData, NULL);
 
     AACKM(AAudioStreamBuilder_openStream(builder, &stream),"open stream");
