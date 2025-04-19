@@ -2,10 +2,10 @@
 #define STR(x)     STR_(x)
 #define STDIN      0
 
-#define PKG        "2n"
+#define PKG        "2b"
 #define VERMAJ     0
-#define VERMIN     2
-#define VERPT      2
+#define VERMIN     0
+#define VERPT      0
 #define VER        STR(VERMAJ) "." STR(VERMIN) "." STR(VERPT)
 #define VERTXT     "✝ v" VER
 #define PKGVER     PKG " " VERTXT

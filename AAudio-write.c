@@ -15,21 +15,19 @@ void halt(char ret){
 }
 
 void check(aaudio_result_t result,const char* action,const char* file,const int line){
-	if (result != AAUDIO_OK){
-		if(action){
-			fprintf(stderr,"Error '%s' in file '%s' at line %d.",AAudio_convertResultToText(result),file,line);
-		}else{
-			fprintf(stderr,"Failed to %s in file '%s' at line %d. %s",action,file,line,AAudio_convertResultToText(result));
-		}
-		halt(1);
-	}
+	if(result == AAUDIO_OK)return;
+	if(action)
+		fprintf(stderr,"Error '%s' in file '%s' at line %d.",AAudio_convertResultToText(result),file,line);
+	else
+		fprintf(stderr,"Failed to %s in file '%s' at line %d. %s",action,file,line,AAudio_convertResultToText(result));
+	halt(1);
 }
 
 #define AACKM(x,m) check(x,m,__FILE__,__LINE__)
 #define AACK(x) AACKM(x,NULL)
 
 void errorCallback(AAudioStream *stream, void *userData, aaudio_result_t error) {
-    fprintf(stderr, "Error: %s\n", AAudio_convertResultToText(error));
+	fprintf(stderr, "Error: %s\n", AAudio_convertResultToText(error));
 }
 
 int fillBufferWithPCMData(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames) {
@@ -41,7 +39,7 @@ int fillBufferWithPCMData(AAudioStream *stream, void *userData, void *audioData,
 int main() {
     aaudio_result_t result;
 
-	 AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
+	AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
 
     AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
     AAudioStreamBuilder_setChannelCount(builder, 2);
@@ -57,5 +55,5 @@ int main() {
     while (1) {
         // Keep the stream running
     }
-	 halt(0);
+	halt(0);
 }
