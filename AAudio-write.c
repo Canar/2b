@@ -7,6 +7,8 @@
 #define TICK_TIME 1000 * 1000 * 1000 /* 1 second, 10^9ps */
 #define API "AAudio"
 
+#include "args.c"
+
 AAudioStreamBuilder *builder;
 AAudioStream *stream;
 
@@ -15,8 +17,6 @@ void halt(char ret){
 	if(builder) AAudioStreamBuilder_delete(builder);
 	exit(ret);
 }
-
-#include "args.c" 
 
 void check(aaudio_result_t result,const char* action,const char* file,const int line){
 	if (result == AAUDIO_OK) return;
@@ -48,8 +48,7 @@ int main(int argc,char**argv) {
 	AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_FLOAT);
 	//AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_I16); 
 
-	int rate = 44100;
-	int channels = 1;
+	int rate,channels;
 	handle_args(argc,argv,&channels,&rate);
 	AAudioStreamBuilder_setChannelCount(builder,channels);
 	AAudioStreamBuilder_setSampleRate(builder,rate);
