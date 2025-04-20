@@ -2,16 +2,10 @@
 #include <stdlib.h>
 #include <aaudio/AAudio.h>
 
-#ifndef RATE
-#define RATE 44100
-#endif
-#ifndef CHANNELS
-#define CHANNELS 1
-#endif
 #define BUFFER_SIZE 1<<12
-#define WORD_SIZE 1<<2
-#define FRAME_SIZE CHANNELS * WORD_SIZE
-#define BUFFER_FRAMES BUFFER_SIZE / FRAME_SIZE
+#define WORD_SIZE 1<<2 //TODO: variable format?
+#define TICK_TIME 1000 * 1000 * 1000 /* 1 second, 10^9ps */
+#define API "AAudio"
 
 AAudioStreamBuilder *builder;
 AAudioStream *stream;
@@ -22,14 +16,14 @@ void halt(char ret){
 	exit(ret);
 }
 
+#include "args.c" 
+
 void check(aaudio_result_t result,const char* action,const char* file,const int line){
 	if (result == AAUDIO_OK) return;
-
-	char* err="Failed to %s in file '%s' at line %d:\n\t%s\n";
-	if(action) err="Error in file '%2$s' at line %3$d:\n\t%4$s.\n";
+	char* err="Error in file '%2$s' at line %3$d:\n\t%4$s.\n";
+	if(action) err="Failed to %s in file '%s' at line %d:\n\t%s\n";
 	fprintf(stderr,err,action,file,line,AAudio_convertResultToText(result));
-	halt(1);
-	return;
+	halt(1); /*implies*/ return;
 }
 
 #define AACKM(x,m) check(x,m,__FILE__,__LINE__)
@@ -39,32 +33,37 @@ void on_error(AAudioStream *stream, void *userData, aaudio_result_t error) {
 	fprintf(stderr, "Error: %s\n", AAudio_convertResultToText(error));
 }
 
-int on_fill(AAudioStream *stream, void *userData, void *audioData, int32_t numFrames) {
-    if (fread(audioData,1,(size_t)(numFrames*FRAME_SIZE),stdin))
+int on_fill(AAudioStream *stream, void *user_data, void *audio_data, int32_t frame_count) {
+	if (fread(audio_data,1,(size_t)((*(int*)user_data)*frame_count),stdin))
 		return AAUDIO_CALLBACK_RESULT_CONTINUE;
-	halt(0);
-	return AAUDIO_CALLBACK_RESULT_STOP;
+	halt(0); /*implies*/ return AAUDIO_CALLBACK_RESULT_STOP;
 }
 
-int main() {
-//int _start() {
-    aaudio_result_t result;
+int main(int argc,char**argv) {
+	aaudio_result_t result;
 
 	AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
-    AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_FLOAT);
-    //AAudioStreamBuilder_setFormat(builder, AAUDIO_FORMAT_PCM_I16);
-    AAudioStreamBuilder_setChannelCount(builder, CHANNELS);
-    AAudioStreamBuilder_setSampleRate(builder, RATE);
-    AAudioStreamBuilder_setDirection(builder, AAUDIO_DIRECTION_OUTPUT);
-    AAudioStreamBuilder_setErrorCallback(builder, on_error, NULL);
-    AAudioStreamBuilder_setFramesPerDataCallback(builder, BUFFER_FRAMES);
-    AAudioStreamBuilder_setDataCallback(builder, on_fill, NULL);
+	AAudioStreamBuilder_setDirection(builder,AAUDIO_DIRECTION_OUTPUT);
+	AAudioStreamBuilder_setErrorCallback(builder,on_error,NULL);
+	AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_FLOAT);
+	//AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_I16); 
 
-    AACKM(AAudioStreamBuilder_openStream(builder, &stream),"open stream");
-    AACKM(AAudioStream_requestStart(stream),"start stream");
+	int rate = 44100;
+	int channels = 1;
+	handle_args(argc,argv,&channels,&rate);
+	AAudioStreamBuilder_setChannelCount(builder,channels);
+	AAudioStreamBuilder_setSampleRate(builder,rate);
 
-    while (1) {
-        // Keep the stream running
-    }
+	int frame_size = channels * WORD_SIZE;
+	AAudioStreamBuilder_setFramesPerDataCallback(builder,BUFFER_SIZE / frame_size);
+	AAudioStreamBuilder_setDataCallback(builder,on_fill,&frame_size);
+
+	AACKM(AAudioStreamBuilder_openStream(builder, &stream),"open stream");
+	AACKM(AAudioStream_requestStart(stream),"start stream");
+
+	aaudio_stream_state_t state = AAUDIO_STREAM_STATE_STARTING;
+	while (state != AAUDIO_STREAM_STATE_STOPPED && state != AAUDIO_STREAM_STATE_CLOSED)
+		AAudioStream_waitForStateChange(stream,state,0,TICK_TIME);
+
 	halt(0);
 }

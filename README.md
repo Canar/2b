@@ -38,7 +38,10 @@ Under Termux, the following APIs can be built and run.
 - OpenSL ES
 - AAudio
 
-AAudio requires Android 9 aka O aka Oreo.
+AAudio requires Android 9 aka O aka Oreo aka API 26.
+
+AAudio has a primitive getopt implementation that is\
+probably portable to other shims with little effort.
 
 Android shims do not heed config.h yet.
 
@@ -64,18 +67,15 @@ Windows `type tmp.raw | DirectSound-write.exe`
 
 ## Features and Configuration
 
-These programs are very lightly tested and have all kinds of inconsistencies.
+These programs are very lightly tested.
 
-These programs are developed in the "Suckless" style and are configured\
-by editing `config.h`. This is where channel count, sampling rate,\
-sample format, and such are configured, ideally.
+Windows generally uses signed 16-bit int samples.
 
-`2b` defaults to CD audio quality: 44.1kHz 16-bit interleaved stereo PCM
-
-
+AAudio currently uses float samples.
 
 ## Release Log
 
 0.0 - Initial release. `2024-07-15`\
 Added some experimental outputs, readers, etc. `2025-04-10`\
-hacked around on 2b's aaudio stuff until I figured out how to enable the aaudio pulseaudio sink in Termux lol `2025-04-14`
+hacked around on 2b's aaudio stuff until I figured out how to enable the aaudio pulseaudio sink in Termux lol `2025-04-14`\
+AAudio still has merit because Termux's AAudio Pulseaudio sink isn't reliable. Added option handling to AAudio format. `2025-04-19`
