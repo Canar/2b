@@ -4,41 +4,38 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// OpenSL ES engine and output mix objects
 SLObjectItf engineObject = NULL;
 SLEngineItf engineEngine = NULL;
 SLObjectItf outputMixObject = NULL;
 
-// Player objects
 SLObjectItf playerObject = NULL;
 SLPlayItf playerPlay = NULL;
 SLAndroidSimpleBufferQueueItf playerBufferQueue = NULL;
 
-// Buffer to hold PCM data
 #define BUFFER_SIZE 8192
 short buffer[BUFFER_SIZE];
 
-// Callback function for buffer queue
+volatile int eof=0;
+
+void cleanupOpenSLES();
+
 void playerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
-    size_t bytesRead = fread(buffer, sizeof(short), BUFFER_SIZE, stdin);
-    if (bytesRead > 0) {
-        (*bq)->Enqueue(bq, buffer, bytesRead * sizeof(short));
-    }
+    size_t bytes_read = fread(buffer, sizeof(short), BUFFER_SIZE, stdin);
+	eof=bytes_read<=0;
+	(*bq)->Enqueue(bq, buffer, bytes_read * sizeof(short));
 }
 
-// Function to initialize OpenSL ES
 void initOpenSLES() {
-    // Create and realize engine
     slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);
     (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
     (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineEngine);
+    
+	(*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 0, NULL, NULL);
 
-    // Create output mix
-    (*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 0, NULL, NULL);
     (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
 
-    // Configure audio source
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
+	/*
     SLDataFormat_PCM format_pcm = {
         SL_DATAFORMAT_PCM,
         2, // Channels
@@ -48,13 +45,23 @@ void initOpenSLES() {
         SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT,
         SL_BYTEORDER_LITTLEENDIAN
     };
+	*/
+    SLAndroidDataFormat_PCM_EX format_pcm;
+	format_pcm.formatType=SL_ANDROID_DATAFORMAT_PCM_EX;
+	format_pcm.numChannels=1;
+	//format_pcm.numChannels=2;
+	format_pcm.sampleRate = SL_SAMPLINGRATE_44_1;
+	format_pcm.bitsPerSample = 32;
+	format_pcm.containerSize = 32;
+	format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
+	//format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+	format_pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
+	format_pcm.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
     SLDataSource audioSrc = {&loc_bufq, &format_pcm};
 
-    // Configure audio sink
     SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObject};
     SLDataSink audioSnk = {&loc_outmix, NULL};
 
-    // Create audio player
     const SLInterfaceID ids[] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
     const SLboolean req[] = {SL_BOOLEAN_TRUE};
     (*engineEngine)->CreateAudioPlayer(engineEngine, &playerObject, &audioSrc, &audioSnk, 1, ids, req);
@@ -73,33 +80,16 @@ void initOpenSLES() {
 }
 
 // Function to clean up OpenSL ES
+#define destroy(x) if(x!=NULL)(*x)->Destroy(x);
 void cleanupOpenSLES() {
-    if (playerObject != NULL) {
-        (*playerObject)->Destroy(playerObject);
-        playerObject = NULL;
-        playerPlay = NULL;
-        playerBufferQueue = NULL;
-    }
-    if (outputMixObject != NULL) {
-        (*outputMixObject)->Destroy(outputMixObject);
-        outputMixObject = NULL;
-    }
-    if (engineObject != NULL) {
-        (*engineObject)->Destroy(engineObject);
-        engineObject = NULL;
-        engineEngine = NULL;
-    }
+	destroy(playerObject);
+	destroy(outputMixObject);
+	destroy(engineObject);
 }
 
 int main(int argc, char *argv[]) {
     initOpenSLES();
-
-    // Keep the main thread alive to process audio
-    while (1) {
-        // Sleep to save CPU
-        usleep(10000);
-    }
-
+    while(!eof)usleep(1000 * 1000 / 24);//24Hz sleep. Cinema!
     cleanupOpenSLES();
     return 0;
 }
