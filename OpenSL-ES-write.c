@@ -48,17 +48,10 @@ void initOpenSLES() {
         SL_BYTEORDER_LITTLEENDIAN
     };
 	*/
-    SLAndroidDataFormat_PCM_EX format_pcm;
-	format_pcm.formatType=SL_ANDROID_DATAFORMAT_PCM_EX;
-	format_pcm.numChannels=1;
-	//format_pcm.numChannels=2;
-	format_pcm.sampleRate = SL_SAMPLINGRATE_44_1;
-	format_pcm.bitsPerSample = 32;
-	format_pcm.containerSize = 32;
-	format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
-	//format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-	format_pcm.endianness = SL_BYTEORDER_LITTLEENDIAN;
-	format_pcm.representation = SL_ANDROID_PCM_REPRESENTATION_FLOAT;
+	SLAndroidDataFormat_PCM_EX format_pcm = {
+		SL_ANDROID_DATAFORMAT_PCM_EX, 1, SL_SAMPLINGRATE_44_1, 32, 32,
+		SL_SPEAKER_FRONT_LEFT, SL_BYTEORDER_LITTLEENDIAN, SL_ANDROID_PCM_REPRESENTATION_FLOAT
+	};
     SLDataSource audioSrc = {&loc_bufq, &format_pcm};
 
     SLDataLocator_OutputMix loc_outmix = {SL_DATALOCATOR_OUTPUTMIX, outputMixObject};
