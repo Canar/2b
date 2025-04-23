@@ -4,11 +4,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-SLObjectItf engineObject = NULL;
+SLObjectItf engineObject=NULL, outputMixObject=NULL, playerObject=NULL;
 SLEngineItf engineEngine = NULL;
-SLObjectItf outputMixObject = NULL;
-
-SLObjectItf playerObject = NULL;
 SLPlayItf playerPlay = NULL;
 SLAndroidSimpleBufferQueueItf playerBufferQueue = NULL;
 
@@ -16,13 +13,19 @@ SLAndroidSimpleBufferQueueItf playerBufferQueue = NULL;
 short buffer[BUFFER_SIZE];
 
 volatile int eof=0;
-
-void cleanupOpenSLES();
+#define DESTROY(x) if(x!=NULL) (*x)->CALL(x,Destroy)
+#define DESTROY_(x) if(x!=NULL) (*x)->Destroy(x)
+#define CALL(obj, method, ...) (*(obj))->method((obj), __VA_ARGS__)
+void cleanupOpenSLES() {
+	DESTROY_(playerObject);
+	DESTROY_(outputMixObject);
+	DESTROY_(engineObject);
+}
 
 void playerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
     size_t bytes_read = fread(buffer, sizeof(short), BUFFER_SIZE, stdin);
 	eof=bytes_read<=0;
-	(*bq)->Enqueue(bq, buffer, bytes_read * sizeof(short));
+	CALL(bq,Enqueue,buffer,bytes_read * sizeof(short));
 }
 
 void initOpenSLES() {
@@ -69,24 +72,10 @@ void initOpenSLES() {
     (*playerObject)->GetInterface(playerObject, SL_IID_PLAY, &playerPlay);
     (*playerObject)->GetInterface(playerObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &playerBufferQueue);
 
-    // Register callback function
     (*playerBufferQueue)->RegisterCallback(playerBufferQueue, playerCallback, NULL);
-
-    // Set player to playing state
     (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
-
-    // Enqueue initial buffer
     playerCallback(playerBufferQueue, NULL);
 }
-
-// Function to clean up OpenSL ES
-#define destroy(x) if(x!=NULL)(*x)->Destroy(x);
-void cleanupOpenSLES() {
-	destroy(playerObject);
-	destroy(outputMixObject);
-	destroy(engineObject);
-}
-
 int main(int argc, char *argv[]) {
     initOpenSLES();
     while(!eof)usleep(1000 * 1000 / 24);//24Hz sleep. Cinema!
