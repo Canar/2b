@@ -78,4 +78,5 @@ AAudio currently uses float samples.
 0.0 - Initial release. `2024-07-15`\
 Added some experimental outputs, readers, etc. `2025-04-10`\
 hacked around on 2b's aaudio stuff until I figured out how to enable the aaudio pulseaudio sink in Termux lol `2025-04-14`\
-AAudio still has merit because Termux's AAudio Pulseaudio sink isn't reliable. Added option handling to AAudio format. `2025-04-19`
+AAudio still has merit because Termux's AAudio Pulseaudio sink isn't reliable. Added option handling to AAudio format. `2025-04-19`\
+Refined OpenSL-ES code somewhat. `2025-04-23`
