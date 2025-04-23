@@ -30,12 +30,9 @@ void playerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
 void initOpenSLES() {
     slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);
 	CALL(engineObject,Realize,SL_BOOLEAN_FALSE);
-    (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineEngine);
-    
-	(*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 0, NULL, NULL);
-
-    (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
-
+	CALL(engineObject,GetInterface,SL_IID_ENGINE,&engineEngine);
+    CALL(engineEngine,CreateOutputMix,&outputMixObject,0,NULL,NULL);
+	CALL(outputMixObject,Realize,SL_BOOLEAN_FALSE);
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = {SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2};
 	/*
     SLDataFormat_PCM format_pcm = {
@@ -59,13 +56,12 @@ void initOpenSLES() {
 
     const SLInterfaceID ids[] = {SL_IID_ANDROIDSIMPLEBUFFERQUEUE};
     const SLboolean req[] = {SL_BOOLEAN_TRUE};
-    (*engineEngine)->CreateAudioPlayer(engineEngine, &playerObject, &audioSrc, &audioSnk, 1, ids, req);
-    (*playerObject)->Realize(playerObject, SL_BOOLEAN_FALSE);
-    (*playerObject)->GetInterface(playerObject, SL_IID_PLAY, &playerPlay);
-    (*playerObject)->GetInterface(playerObject, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &playerBufferQueue);
-
-    (*playerBufferQueue)->RegisterCallback(playerBufferQueue, playerCallback, NULL);
-    (*playerPlay)->SetPlayState(playerPlay, SL_PLAYSTATE_PLAYING);
+    CALL(engineEngine,CreateAudioPlayer, &playerObject, &audioSrc, &audioSnk, 1, ids, req);
+    CALL(playerObject,Realize,SL_BOOLEAN_FALSE);
+    CALL(playerObject,GetInterface, SL_IID_PLAY, &playerPlay);
+    CALL(playerObject,GetInterface, SL_IID_ANDROIDSIMPLEBUFFERQUEUE, &playerBufferQueue);
+    CALL(playerBufferQueue,RegisterCallback, playerCallback, NULL);
+    CALL(playerPlay,SetPlayState, SL_PLAYSTATE_PLAYING);
     playerCallback(playerBufferQueue, NULL);
 }
 int main(int argc, char *argv[]) {
