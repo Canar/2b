@@ -13,13 +13,12 @@ SLAndroidSimpleBufferQueueItf playerBufferQueue = NULL;
 short buffer[BUFFER_SIZE];
 
 volatile int eof=0;
-#define DESTROY(x) if(x!=NULL) (*x)->CALL(x,Destroy)
-#define DESTROY_(x) if(x!=NULL) (*x)->Destroy(x)
-#define CALL(obj, method, ...) (*(obj))->method((obj), __VA_ARGS__)
+#define CALL(object,method,...) (*(object))->method((object),##__VA_ARGS__)
+#define DESTROY(x) if(x!=NULL) CALL(x,Destroy)
 void cleanupOpenSLES() {
-	DESTROY_(playerObject);
-	DESTROY_(outputMixObject);
-	DESTROY_(engineObject);
+	DESTROY(playerObject);
+	DESTROY(outputMixObject);
+	DESTROY(engineObject);
 }
 
 void playerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
@@ -30,7 +29,7 @@ void playerCallback(SLAndroidSimpleBufferQueueItf bq, void *context) {
 
 void initOpenSLES() {
     slCreateEngine(&engineObject, 0, NULL, 0, NULL, NULL);
-    (*engineObject)->Realize(engineObject, SL_BOOLEAN_FALSE);
+	CALL(engineObject,Realize,SL_BOOLEAN_FALSE);
     (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineEngine);
     
 	(*engineEngine)->CreateOutputMix(engineEngine, &outputMixObject, 0, NULL, NULL);
