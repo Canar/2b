@@ -11,9 +11,6 @@ void usage(const char *prog_name) {
 	fprintf(stderr, "  -c, --channels <chans>  Set the number of channels (default: %d)\n",CHAN);
 	fprintf(stderr, "  -h, --help              Display this help message\n");
 }
-
-void halt(char ret);
-
 void handle_args(int argc,char**argv,int*chan,int*rate){
 	static struct option long_options[] = {
 		{"rate",     required_argument, 0, 'r'},
@@ -39,6 +36,6 @@ void handle_args(int argc,char**argv,int*chan,int*rate){
 	case '?':
 	default:
 		usage(argv[0]);
-		halt(0);
+		exit(0);
 	}
 }
