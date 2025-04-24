@@ -60,12 +60,9 @@ int main(int argc,char**argv) {
 
 	AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
 	init_builder(builder,channels,rate);
-
 	AACKM(AAudioStreamBuilder_openStream(builder, &stream),"open stream");
 	AACKM(AAudioStream_requestStart(stream),"start stream");
 
 	while (state != AAUDIO_STREAM_STATE_STOPPED && state != AAUDIO_STREAM_STATE_CLOSED)
 		AAudioStream_waitForStateChange(stream,state,0,TICK_TIME);
-
-	halt(0);
 }
