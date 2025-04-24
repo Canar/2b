@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <aaudio/AAudio.h>
+#define API "AAudio"
+#include "args.c"
 
 #define BUFFER_SIZE 1<<12
 #define WORD_SIZE 1<<2 //TODO: variable format?
 #define TICK_TIME 1000 * 1000 * 1000 /* 1 second, 10^9ps */
-#define API "AAudio"
 
-#include "args.c"
+#define AACKM(x,m) check(x,m,__FILE__,__LINE__)
+#define AACK(x) AACKM(x,NULL)
 
 AAudioStreamBuilder *builder;
 AAudioStream *stream;
@@ -25,9 +27,6 @@ void check(aaudio_result_t result,const char* action,const char* file,const int 
 	fprintf(stderr,err,action,file,line,AAudio_convertResultToText(result));
 	halt(1); /*implies*/ return;
 }
-
-#define AACKM(x,m) check(x,m,__FILE__,__LINE__)
-#define AACK(x) AACKM(x,NULL)
 
 void on_error(AAudioStream *stream, void *userData, aaudio_result_t error) {
 	fprintf(stderr, "Error: %s\n", AAudio_convertResultToText(error));
