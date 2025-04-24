@@ -7,18 +7,24 @@
 
 ## Abstract
 
-This is a suite of auxiliary programs for my audio player [2n](https://github.com/Canar/2n).
+This is a suite of auxiliary programs for various audio apps of mine.
+
+- [2n](https://github.com/Canar/2n).
+- [prolaudi](https://github.com/Canar/prolaudi).
 
 These programs read raw PCM from stdin and write to various audio devices. 
 
 These are modeled after eg. `pacat`, `aplay`, `pw-cat`.
 
 These programs may be of interest to users looking for a compact\
-example as a tutorial for implementation of the various APIs.
+example as a tutorial for implementation of the various APIs. But\
+note that I've removed all "unnecessary" code I can get away with.
 
 Nothing here is well-tested at all, but everything "worked" at one point.
 
 ## Platforms
+
+### Windows
 
 The following Windows audio APIs have an implementation.
 
@@ -33,22 +39,27 @@ There is a non-functional attempt at Kernel Streaming.\
 Windows code was tested in Wine and MSYS2-MINGW64 on\
 QEMU KVM Windows 11.
 
-Under Termux, the following APIs can be built and run.
+Windows platform defaults to 16-bit samples.
+
+#### Windows `cat`
+
+2b includes a minimal implementation of binary cat.
+
+It's only really of interest if you're curious how to\
+set up Windows systems to pipe binary, ie. not treat\
+`0x1a` as EOF.
+
+### Termux
+
+Both Android audio APIs have an implementation under Termux.
 
 - OpenSL ES
 - AAudio
 
 AAudio requires Android 9 aka O aka Oreo aka API 26.
 
-AAudio has a primitive getopt implementation that is\
+Android programs has a primitive getopt implementation that is\
 probably portable to other shims with little effort.
-
-Android shims do not heed config.h yet.
-
-Finally, there is also a minimal `cat` implementation.\
-It's only really of interest if you're curious how to\
-set up Windows systems to pipe binary, ie. not treat\
-`0x1a` as EOF.
 
 ## Usage
 
@@ -69,9 +80,7 @@ Windows `type tmp.raw | DirectSound-write.exe`
 
 These programs are very lightly tested.
 
-Windows generally uses signed 16-bit int samples.
-
-AAudio currently uses float samples.
+Configuration is handled by editing the code.
 
 ## Release Log
 
@@ -80,3 +89,4 @@ Added some experimental outputs, readers, etc. `2025-04-10`\
 hacked around on 2b's aaudio stuff until I figured out how to enable the aaudio pulseaudio sink in Termux lol `2025-04-14`\
 AAudio still has merit because Termux's AAudio Pulseaudio sink isn't reliable. Added option handling to AAudio format. `2025-04-19`\
 Refined OpenSL-ES code somewhat. `2025-04-23`
+reamde, AAudio cleanup `2025-04-24`
