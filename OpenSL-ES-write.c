@@ -1,8 +1,8 @@
-#include <SLES/OpenSLES.h>
-#include <SLES/OpenSLES_Android.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 
 SLObjectItf sles=NULL, outmix=NULL, playerObject=NULL;
 SLEngineItf engine = NULL;
@@ -14,15 +14,15 @@ char buffer[BUFFER_SIZE];
 
 volatile int eof=0;
 #define CALL(object,method,...) (*(object))->method((object),##__VA_ARGS__)
-#define DESTROY(x) if(x!=NULL) CALL(x,Destroy)
+#define DESTROY(x) if (x!=NULL) CALL(x,Destroy)
 
-void fill_buffer(SLAndroidSimpleBufferQueueItf bq, void *context) {
+void fill_buffer(SLAndroidSimpleBufferQueueItf bq, void *context){
 	size_t bytes_read = fread(buffer,1,BUFFER_SIZE,stdin);
 	eof=bytes_read<=0;
 	CALL(bq,Enqueue,buffer,bytes_read);
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc,char**argv){
 	slCreateEngine(&sles, 0, NULL, 0, NULL, NULL);
 	CALL(sles,Realize,SL_BOOLEAN_FALSE);
 	CALL(sles,GetInterface,SL_IID_ENGINE,&engine);

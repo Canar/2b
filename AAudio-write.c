@@ -14,8 +14,8 @@ AAudioStreamBuilder *builder;
 AAudioStream *stream;
 
 void halt(char ret){
-	if(stream)  AAudioStream_close(stream);
-	if(builder) AAudioStreamBuilder_delete(builder);
+	if (stream)  AAudioStream_close(stream);
+	if (builder) AAudioStreamBuilder_delete(builder);
 	exit(ret);
 }
 
@@ -28,7 +28,7 @@ void check(aaudio_result_t result,const char* action,const char* file,const int 
 }
 
 int on_fill(AAudioStream *stream, void *user_data, void *audio_data, int32_t frame_count) {
-	if (fread(audio_data,1,(size_t)((*(int*)user_data)*frame_count),stdin))
+	if(fread(audio_data,1,(size_t)((*(int*)user_data)*frame_count),stdin))
 		return AAUDIO_CALLBACK_RESULT_CONTINUE;
 	halt(0); /*implies*/ return AAUDIO_CALLBACK_RESULT_STOP;
 }
