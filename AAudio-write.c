@@ -13,6 +13,7 @@
 
 AAudioStreamBuilder *builder;
 AAudioStream *stream;
+int frame_size;
 
 void halt(char ret){
 	if(stream)  AAudioStream_close(stream);
@@ -38,28 +39,31 @@ int on_fill(AAudioStream *stream, void *user_data, void *audio_data, int32_t fra
 	halt(0); /*implies*/ return AAUDIO_CALLBACK_RESULT_STOP;
 }
 
-int main(int argc,char**argv) {
-	aaudio_result_t result;
-	int rate,channels;
-	handle_args(argc,argv,&channels,&rate);
-
-	AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
+void init_builder(AAudioStreamBuilder*builder,int channels,int rate){
+	frame_size=channels * WORD_SIZE;
 	AAudioStreamBuilder_setDirection(builder,AAUDIO_DIRECTION_OUTPUT);
 	AAudioStreamBuilder_setErrorCallback(builder,on_error,NULL);
 	AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_FLOAT);
 	//AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_I16); 
-
 	AAudioStreamBuilder_setChannelCount(builder,channels);
 	AAudioStreamBuilder_setSampleRate(builder,rate);
-
-	int frame_size = channels * WORD_SIZE;
 	AAudioStreamBuilder_setFramesPerDataCallback(builder,BUFFER_SIZE / frame_size);
 	AAudioStreamBuilder_setDataCallback(builder,on_fill,&frame_size);
+}
+
+
+int main(int argc,char**argv) {
+	aaudio_result_t result;
+	int rate,channels;
+	aaudio_stream_state_t state = AAUDIO_STREAM_STATE_STARTING;
+	handle_args(argc,argv,&channels,&rate);
+
+	AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
+	init_builder(builder,channels,rate);
 
 	AACKM(AAudioStreamBuilder_openStream(builder, &stream),"open stream");
 	AACKM(AAudioStream_requestStart(stream),"start stream");
 
-	aaudio_stream_state_t state = AAUDIO_STREAM_STATE_STARTING;
 	while (state != AAUDIO_STREAM_STATE_STOPPED && state != AAUDIO_STREAM_STATE_CLOSED)
 		AAudioStream_waitForStateChange(stream,state,0,TICK_TIME);
 
