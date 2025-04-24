@@ -40,6 +40,8 @@ int on_fill(AAudioStream *stream, void *user_data, void *audio_data, int32_t fra
 
 int main(int argc,char**argv) {
 	aaudio_result_t result;
+	int rate,channels;
+	handle_args(argc,argv,&channels,&rate);
 
 	AACKM(AAudio_createStreamBuilder(&builder),"create stream builder");
 	AAudioStreamBuilder_setDirection(builder,AAUDIO_DIRECTION_OUTPUT);
@@ -47,8 +49,6 @@ int main(int argc,char**argv) {
 	AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_FLOAT);
 	//AAudioStreamBuilder_setFormat(builder,AAUDIO_FORMAT_PCM_I16); 
 
-	int rate,channels;
-	handle_args(argc,argv,&channels,&rate);
 	AAudioStreamBuilder_setChannelCount(builder,channels);
 	AAudioStreamBuilder_setSampleRate(builder,rate);
 
