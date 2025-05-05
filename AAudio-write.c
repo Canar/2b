@@ -4,18 +4,18 @@
 
 #define BUFFER_SIZE 1<<12
 #define WORD_SIZE 1<<2 //TODO: variable format?
-#define TICK_TIME 1000 * 1000 * 1000 /* 1 second, 10^9ps */
+#define TICK_TIME 1000 * 1000 * 1000 /* 1 second, 10^9ns */
 #define API "AAudio"
 
 #include "args.c"
 
-AAudioStreamBuilder *builder;
-AAudioStream *stream;
+AAudioStreamBuilder *builder=NULL;
+AAudioStream *stream=NULL;
 
 void halt(char ret){
 	if(stream)  AAudioStream_close(stream);
 	if(builder) AAudioStreamBuilder_delete(builder);
-	exit(ret);
+	exit(ret); /*implies*/ return;
 }
 
 void check(aaudio_result_t result,const char* action,const char* file,const int line){

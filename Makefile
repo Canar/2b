@@ -78,4 +78,7 @@ OpenSL-ES-write: OpenSL-ES-write.c
 AAudio-write: AAudio-write.c args.c
 	clang -o AAudio-write AAudio-write.c -laaudio --target=aarch64-unknown-linux-android26
 
+ffmpeg-read:
+	$(CC) -o ffmpeg-read -lavcodec -lavutil -lavformat ffmpeg-read.c
+
 .PHONY: install debug tcc waveout DSound-write.c.bak

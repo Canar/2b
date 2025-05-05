@@ -1,6 +1,4 @@
 //to test: ffmpeg -i audio.file -f s16le - | waveOut-write.exe
-
-
 #define WIN32_LEAN_AND_MEAN
 
 #include "config.h"
